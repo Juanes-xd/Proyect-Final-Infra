@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # Servicios originales
+  sentiment-analyzer:
+    build: ./miniproyecto2/microservicio1
+    ports:
+      - "8001:8000"
+    container_name: twitter-sentiment-analyzer
+    environment:
+      - SERVICE_NAME=Twitter Sentiment Analyzer
+
+  portfolio-manager:
+    build: ./miniproyecto2/microservicio2
+    ports:
+      - "8002:8000"
+    container_name: portfolio-manager
+    environment:
+      - SERVICE_NAME=Portfolio Manager
+    depends_on:
+      - sentiment-analyzer
+
+  garch-predictor:
+    build: ./miniproyecto3/microservicio1
+    ports:
+      - "8003:8000"
+    container_name: garch-volatility-predictor
+    environment:
+      - SERVICE_NAME=GARCH Volatility Predictor
+
+  intraday-strategy:
+    build: ./miniproyecto3/microservicio2
+    ports:
+      - "8004:8000"
+    container_name: intraday-strategy-engine
+    environment:
+      - SERVICE_NAME=Intraday Strategy Engine
+    depends_on:
+      - garch-predictor
+
+  # Nuevos servicios con Ray
+  sentiment-analyzer-ray:
+    build:
+      context: ./ray_services
+      dockerfile: sentiment_analyzer/Dockerfile
+    ports:
+      - "8005:8000"
+    container_name: ray-sentiment-analyzer
+    environment:
+      - SERVICE_NAME=Ray Sentiment Analyzer
+      - RAY_DISABLE_IMPORT_WARNING=1
+      - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
+    shm_size: 1g
+
+  garch-predictor-ray:
+    build:
+      context: ./ray_services
+      dockerfile: garch_predictor/Dockerfile
+    ports:
+      - "8006:8000"
+    container_name: ray-garch-predictor
+    environment:
+      - SERVICE_NAME=Ray GARCH Predictor
+      - RAY_DISABLE_IMPORT_WARNING=1
+      - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
+    shm_size: 1g
+
+  portfolio-manager-ray:
+    build:
+      context: ./ray_services
+      dockerfile: portfolio_manager/Dockerfile
+    ports:
+      - "8007:8000"
+    container_name: ray-portfolio-manager
+    environment:
+      - SERVICE_NAME=Ray Portfolio Manager
+      - RAY_DISABLE_IMPORT_WARNING=1
+      - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
+    shm_size: 1g
+
+  intraday-strategy-ray:
+    build:
+      context: ./ray_services
+      dockerfile: intraday_strategy/Dockerfile
+    ports:
+      - "8008:8000"
+    container_name: ray-intraday-strategy
+    environment:
+      - SERVICE_NAME=Ray Intraday Strategy Engine
+      - RAY_DISABLE_IMPORT_WARNING=1
+      - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
+    shm_size: 1g
+
+networks:
+  default:
+    name: trading-microservices-network
