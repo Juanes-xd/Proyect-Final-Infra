@@ -44,7 +44,7 @@ microservicios-proyecto/
 - **Funcionalidades**:
   - `/status` - Estado del servicio - bien
   - `/select-top-stocks?limit=5` - Selecciona top stocks basado en engagement - bien
-  - `/calculate-portfolio-returns` - Calcula retornos del portfolio - mal
+  - `/calculate-portfolio-returns` - Calcula retornos del portfolio - bien -["AAPL", "GOOGL", "MSFT", "TSLA", "NVDA"]
   - `/portfolio-performance` - Métricas de rendimiento - bien
 
 ### Miniproyecto 3: Intraday Strategy Using GARCH Model
@@ -54,15 +54,21 @@ microservicios-proyecto/
 - **Funcionalidades**:
   - `/status` - Estado del servicio - bien
   - `/load-market-data` - Carga datos de mercado (diarios e intraday)- bien
-  - `/predict-volatility` - Predice volatilidad usando modelo GARCH - mal
+  - `/predict-volatility` - Predice volatilidad usando modelo GARCH - bien
+  {
+  "ticker": "AAPL",
+  "periods": 30}
   - `/calculate-rolling-variance` - Calcula varianza móvil- bien
 
 #### 4. Intraday Strategy Engine (Puerto 8004)
 - **Endpoint principal**: `http://localhost:8004`
 - **Funcionalidades**:
-  - `/status` - Estado del servicio - mal
-  - `/calculate-intraday-signals` - Calcula señales intraday -mal
-  - `/execute-strategy` - Ejecuta estrategia de trading - mal
+  - `/status` - Estado del servicio - bien
+  - `/calculate-intraday-signals` - Calcula señales intraday - bein
+  {"daily_signal":1}
+  - `/execute-strategy` - Ejecuta estrategia de trading - bien
+  {
+"position_size":"1000"}
   - `/strategy-performance` - Métricas de rendimiento - bien
 
 ## Cómo Ejecutar
