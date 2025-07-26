@@ -36,7 +36,7 @@ microservicios-proyecto/
 - **Endpoint principal**: `http://localhost:8001`
 - **Funcionalidades**:
   - `/status` - Estado del servicio - bien
-  - `/load-sentiment-data` - Carga y procesa datos de sentiment - mal
+  - `/load-sentiment-data` - Carga y procesa datos de sentiment - bien
   - `/calculate-engagement/{ticker}` - Calcula engagement ratio para un ticker - bien
 
 #### 2. Portfolio Manager (Puerto 8002)
