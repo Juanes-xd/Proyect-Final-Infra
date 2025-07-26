@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Miniproyecto 2: Twitter Sentiment Strategy
+  sentiment-analyzer:
+    build: ./miniproyecto2/microservicio1
+    ports:
+      - "8001:8000"
+    container_name: twitter-sentiment-analyzer
+    environment:
+      - SERVICE_NAME=Twitter Sentiment Analyzer
+
+  portfolio-manager:
+    build: ./miniproyecto2/microservicio2
+    ports:
+      - "8002:8000"
+    container_name: portfolio-manager
+    environment:
+      - SERVICE_NAME=Portfolio Manager
+    depends_on:
+      - sentiment-analyzer
+
+  # Miniproyecto 3: Intraday Strategy Using GARCH Model
+  garch-predictor:
+    build: ./miniproyecto3/microservicio1
+    ports:
+      - "8003:8000"
+    container_name: garch-volatility-predictor
+    environment:
+      - SERVICE_NAME=GARCH Volatility Predictor
+
+  intraday-strategy:
+    build: ./miniproyecto3/microservicio2
+    ports:
+      - "8004:8000"
+    container_name: intraday-strategy-engine
+    environment:
+      - SERVICE_NAME=Intraday Strategy Engine
+    depends_on:
+      - garch-predictor
