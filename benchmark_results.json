@@ -1,0 +1,323 @@
+{
+  "sentiment": {
+    "avg_time": 0.13224530220031738,
+    "min_time": 0.08772802352905273,
+    "max_time": 0.3468775749206543,
+    "std_time": 0.0779970789266985,
+    "times": [
+      0.3468775749206543,
+      0.143326997756958,
+      0.09393620491027832,
+      0.09038710594177246,
+      0.09021806716918945,
+      0.08772802352905273,
+      0.09204244613647461,
+      0.18890094757080078,
+      0.09609866142272949,
+      0.09293699264526367
+    ]
+  },
+  "garch": {
+    "avg_time": 0.9528221130371094,
+    "min_time": 0.745002031326294,
+    "max_time": 2.236239433288574,
+    "std_time": 0.43113338467995893,
+    "times": [
+      2.236239433288574,
+      0.8890116214752197,
+      0.8773272037506104,
+      0.7933471202850342,
+      0.745002031326294,
+      0.8914966583251953,
+      0.7478814125061035,
+      0.7634010314941406,
+      0.7935330867767334,
+      0.7909815311431885
+    ]
+  },
+  "portfolio": {
+    "avg_time": 0.09241135120391845,
+    "min_time": 0.021075963973999023,
+    "max_time": 0.7148053646087646,
+    "std_time": 0.20747405918540962,
+    "times": [
+      0.7148053646087646,
+      0.023124217987060547,
+      0.021075963973999023,
+      0.021602630615234375,
+      0.024414539337158203,
+      0.021956682205200195,
+      0.024742603302001953,
+      0.0217587947845459,
+      0.02253437042236328,
+      0.028098344802856445
+    ]
+  },
+  "intraday": {
+    "avg_time": 0.8563950061798096,
+    "min_time": 0.6916053295135498,
+    "max_time": 1.8314149379730225,
+    "std_time": 0.3264912361559985,
+    "times": [
+      1.8314149379730225,
+      0.7933526039123535,
+      0.7827515602111816,
+      0.7469322681427002,
+      0.7500832080841064,
+      0.7758667469024658,
+      0.7301700115203857,
+      0.6916053295135498,
+      0.7031238079071045,
+      0.7586495876312256
+    ]
+  },
+  "concurrent": {
+    "total_time": 7.2909510135650635,
+    "success_rate": 0.75,
+    "avg_response_time": 1.2379857301712036,
+    "total_requests": 40,
+    "successful_requests": 30,
+    "results": [
+      {
+        "service": "portfolio",
+        "time": 0.011086702346801758,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "portfolio",
+        "time": 0.025014400482177734,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "garch",
+        "time": 0.0913844108581543,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "garch",
+        "time": 0.11134862899780273,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "portfolio",
+        "time": 0.10273218154907227,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "portfolio",
+        "time": 0.011014223098754883,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "sentiment",
+        "time": 0.17195749282836914,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "garch",
+        "time": 0.09160733222961426,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "garch",
+        "time": 0.18967294692993164,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "portfolio",
+        "time": 0.01026773452758789,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "sentiment",
+        "time": 0.23988866806030273,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "garch",
+        "time": 0.0425872802734375,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "garch",
+        "time": 0.04726767539978027,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "portfolio",
+        "time": 0.012001991271972656,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "sentiment",
+        "time": 0.27304625511169434,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "sentiment",
+        "time": 0.20618915557861328,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "sentiment",
+        "time": 0.3770318031311035,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "portfolio",
+        "time": 0.010043144226074219,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "sentiment",
+        "time": 0.1775665283203125,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "garch",
+        "time": 0.04636693000793457,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "garch",
+        "time": 0.04938220977783203,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "portfolio",
+        "time": 0.011166095733642578,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "sentiment",
+        "time": 0.1363973617553711,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "sentiment",
+        "time": 0.14175081253051758,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "sentiment",
+        "time": 0.11350655555725098,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "portfolio",
+        "time": 0.009651660919189453,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "garch",
+        "time": 0.06356644630432129,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "sentiment",
+        "time": 0.08113813400268555,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "garch",
+        "time": 0.04818105697631836,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "portfolio",
+        "time": 0.00805044174194336,
+        "status": 405,
+        "success": false
+      },
+      {
+        "service": "intraday",
+        "time": 2.3714118003845215,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "intraday",
+        "time": 2.3801095485687256,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "intraday",
+        "time": 3.1766059398651123,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "intraday",
+        "time": 4.344851493835449,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "intraday",
+        "time": 4.273561000823975,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "intraday",
+        "time": 5.2820024490356445,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "intraday",
+        "time": 5.834321737289429,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "intraday",
+        "time": 5.771297216415405,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "intraday",
+        "time": 6.6581339836120605,
+        "status": 200,
+        "success": true
+      },
+      {
+        "service": "intraday",
+        "time": 6.516267776489258,
+        "status": 200,
+        "success": true
+      }
+    ]
+  }
+}
