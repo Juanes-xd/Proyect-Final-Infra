@@ -8,13 +8,29 @@ def display_benchmark_results():
     print("🎯 RESULTADOS DEL BENCHMARK - MICROSERVICIOS")
     print("=" * 60)
     
+    # Definir rutas posibles para los resultados
+    results_dir = "benchmarks/results"
+    possible_files = [
+        'benchmark_results.json',  # En directorio actual
+        os.path.join(results_dir, 'benchmark_results.json')  # En carpeta results
+    ]
+    
     # Cargar resultados
-    if not os.path.exists('benchmark_results.json'):
-        print("❌ No se encontró el archivo benchmark_results.json")
+    results = None
+    loaded_from = None
+    
+    for file_path in possible_files:
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                results = json.load(f)
+            loaded_from = file_path
+            break
+    
+    if not results:
+        print("❌ No se encontró el archivo benchmark_results.json en ninguna ubicación")
         return
     
-    with open('benchmark_results.json', 'r') as f:
-        results = json.load(f)
+    print(f"📁 Resultados cargados desde: {loaded_from}")
     
     # Mostrar resultados por servicio
     print("\n📊 RENDIMIENTO POR SERVICIO:")
@@ -82,10 +98,22 @@ def display_benchmark_results():
     print(f"   • Considerar cache para reducir latencia")
     
     print(f"\n📊 Gráficas disponibles:")
-    if os.path.exists('benchmark_comparison_latest.png'):
-        print(f"   ✅ benchmark_comparison_latest.png")
-    else:
+    
+    # Verificar gráficas en ambas ubicaciones
+    graph_locations = [
+        "benchmark_comparison_latest.png",
+        os.path.join(results_dir, "benchmark_comparison_latest.png")
+    ]
+    
+    found_graphs = False
+    for graph_path in graph_locations:
+        if os.path.exists(graph_path):
+            print(f"   ✅ {graph_path}")
+            found_graphs = True
+    
+    if not found_graphs:
         print(f"   ❌ No se encontraron gráficas")
+        print(f"   💡 Ejecuta: python generate_benchmark_charts.py")
 
 if __name__ == "__main__":
     display_benchmark_results()

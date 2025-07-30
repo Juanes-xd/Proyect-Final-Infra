@@ -14,6 +14,7 @@ from typing import Dict, List
 import matplotlib.pyplot as plt
 import seaborn as sns
 import json
+import os
 
 class MicroserviceBenchmark:
     def __init__(self):
@@ -280,9 +281,21 @@ class MicroserviceBenchmark:
     
     def save_results(self, filename='benchmark_results.json'):
         """Guarda resultados en archivo JSON"""
+        # Crear directorio results si no existe
+        results_dir = '../results'
+        os.makedirs(results_dir, exist_ok=True)
+        
+        # Guardar en la carpeta results
+        results_file = os.path.join(results_dir, filename)
+        with open(results_file, 'w') as f:
+            json.dump(self.results, f, indent=2, default=str)
+        
+        # También guardar en directorio actual para compatibilidad
         with open(filename, 'w') as f:
             json.dump(self.results, f, indent=2, default=str)
-        print(f"\n💾 Resultados guardados en {filename}")
+            
+        print(f"\n💾 Resultados guardados en {results_file}")
+        print(f"💾 También guardados en {filename} (compatibilidad)")
     
     def run_full_benchmark(self):
         """Ejecuta benchmark completo"""

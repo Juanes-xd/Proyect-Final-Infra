@@ -13,23 +13,42 @@ class BenchmarkVisualizer:
     def __init__(self):
         self.sequential_results = None
         self.ray_results = None
+        self.results_dir = "benchmarks/results"
+        
+        # Crear directorio de resultados si no existe
+        os.makedirs(self.results_dir, exist_ok=True)
         
     def load_results(self):
         """Carga los resultados de benchmark desde archivos JSON"""
         try:
             # Cargar resultados secuenciales
-            if os.path.exists('benchmark_results.json'):
-                with open('benchmark_results.json', 'r') as f:
+            sequential_file = 'benchmark_results.json'
+            results_sequential_file = os.path.join(self.results_dir, 'benchmark_results.json')
+            
+            # Buscar en directorio actual primero, luego en results
+            if os.path.exists(sequential_file):
+                with open(sequential_file, 'r') as f:
                     self.sequential_results = json.load(f)
-                print("✅ Resultados secuenciales cargados")
+                print("✅ Resultados secuenciales cargados (directorio actual)")
+            elif os.path.exists(results_sequential_file):
+                with open(results_sequential_file, 'r') as f:
+                    self.sequential_results = json.load(f)
+                print("✅ Resultados secuenciales cargados (carpeta results)")
             else:
                 print("❌ No se encontró benchmark_results.json")
                 
             # Cargar resultados Ray (si existen)
-            if os.path.exists('ray_benchmark_results.json'):
-                with open('ray_benchmark_results.json', 'r') as f:
+            ray_file = 'ray_benchmark_results.json'
+            results_ray_file = os.path.join(self.results_dir, 'ray_benchmark_results.json')
+            
+            if os.path.exists(ray_file):
+                with open(ray_file, 'r') as f:
                     self.ray_results = json.load(f)
-                print("✅ Resultados Ray cargados")
+                print("✅ Resultados Ray cargados (directorio actual)")
+            elif os.path.exists(results_ray_file):
+                with open(results_ray_file, 'r') as f:
+                    self.ray_results = json.load(f)
+                print("✅ Resultados Ray cargados (carpeta results)")
             else:
                 print("⚠️ No se encontraron resultados Ray, generando datos simulados para demostración")
                 self.generate_simulated_ray_results()
@@ -167,14 +186,16 @@ class BenchmarkVisualizer:
         
         plt.tight_layout()
         
-        # Guardar gráfica
+        # Guardar gráfica en la carpeta results
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"benchmark_comparison_{timestamp}.png"
+        filename = os.path.join(self.results_dir, f"benchmark_comparison_{timestamp}.png")
+        latest_filename = os.path.join(self.results_dir, "benchmark_comparison_latest.png")
+        
         plt.savefig(filename, dpi=300, bbox_inches='tight')
-        plt.savefig("benchmark_comparison_latest.png", dpi=300, bbox_inches='tight')
+        plt.savefig(latest_filename, dpi=300, bbox_inches='tight')
         
         print(f"📊 Gráfica guardada como: {filename}")
-        print(f"📊 Gráfica también guardada como: benchmark_comparison_latest.png")
+        print(f"📊 Gráfica también guardada como: {latest_filename}")
         
         plt.show()
         
@@ -223,9 +244,9 @@ class BenchmarkVisualizer:
         
         plt.tight_layout()
         
-        # Guardar
+        # Guardar en la carpeta results
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"detailed_metrics_{timestamp}.png"
+        filename = os.path.join(self.results_dir, f"detailed_metrics_{timestamp}.png")
         plt.savefig(filename, dpi=300, bbox_inches='tight')
         
         print(f"📊 Métricas detalladas guardadas como: {filename}")
@@ -281,9 +302,9 @@ class BenchmarkVisualizer:
         report.append("   • Implementar Ray Remote en servicios computacionalmente intensivos")
         report.append("   • Considerar cache para servicios con alta variabilidad")
         
-        # Guardar reporte
+        # Guardar reporte en la carpeta results
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"benchmark_report_{timestamp}.txt"
+        filename = os.path.join(self.results_dir, f"benchmark_report_{timestamp}.txt")
         
         with open(filename, 'w', encoding='utf-8') as f:
             f.write('\n'.join(report))
