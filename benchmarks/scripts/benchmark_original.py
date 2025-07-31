@@ -104,8 +104,9 @@ class MicroserviceBenchmark:
                 # Probar selección de stocks
                 response1 = requests.get(f"{self.base_urls['portfolio']}/select-top-stocks?limit=5")
                 
-                # Probar cálculo de retornos
-                response2 = requests.get(f"{self.base_urls['portfolio']}/calculate-portfolio-returns")
+                # Probar cálculo de retornos (POST con lista de stocks)
+                stock_list = ['AAPL', 'GOOGL', 'MSFT']
+                response2 = requests.post(f"{self.base_urls['portfolio']}/calculate-portfolio-returns", json=stock_list)
                 
                 # Probar métricas de performance
                 response3 = requests.get(f"{self.base_urls['portfolio']}/portfolio-performance")
@@ -174,7 +175,8 @@ class MicroserviceBenchmark:
                 elif service == 'garch':
                     response = requests.post(f"{self.base_urls[service]}/predict-volatility")
                 elif service == 'portfolio':
-                    response = requests.get(f"{self.base_urls[service]}/calculate-portfolio-returns")
+                    stock_list = ['AAPL', 'GOOGL', 'MSFT']
+                    response = requests.post(f"{self.base_urls[service]}/calculate-portfolio-returns", json=stock_list)
                 elif service == 'intraday':
                     data = {"daily_signal": 1}
                     response = requests.post(f"{self.base_urls[service]}/calculate-intraday-signals", json=data)
@@ -307,13 +309,9 @@ class MicroserviceBenchmark:
 def main():
     """Función principal"""
     print("🔬 PROFILING DE MICROSERVICIOS")
-    print("Asegúrate de que todos los microservicios estén ejecutándose:")
-    print("  docker-compose up -d")
-    print("\nPresiona Enter para continuar o Ctrl+C para cancelar...")
+    print("🚀 Iniciando benchmark automático...")
     
     try:
-        input()
-        
         benchmark = MicroserviceBenchmark()
         benchmark.run_full_benchmark()
         
@@ -322,6 +320,8 @@ def main():
         
     except KeyboardInterrupt:
         print("\n❌ Profiling cancelado")
+    except Exception as e:
+        print(f"\n❌ Error durante benchmark: {e}")
 
 if __name__ == "__main__":
     main()
