@@ -1,5 +1,5 @@
 """
-Microservicio GARCH optimizado con Ray
+Microservicio GARCH optimizado con Ray + FastAPI
 Implementa paralelización para predicción de volatilidad en múltiples assets
 """
 
@@ -9,110 +9,111 @@ import pandas as pd
 import numpy as np
 import logging
 import time
+import os
 from typing import Dict, List, Optional
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Inicializar Ray y Ray Serve
+# Inicializar Ray
 if not ray.is_initialized():
     ray.init(
         ignore_reinit_error=True,
-        include_dashboard=False,  # Deshabilitar dashboard para evitar problemas
-        object_store_memory=100000000  # 100MB para object store (mínimo requerido)
+        include_dashboard=False,
+        object_store_memory=100000000
     )
 
-serve.start()
+# Crear aplicación FastAPI
+app = FastAPI(title="Ray GARCH Predictor", version="1.0.0")
 
-@serve.deployment
-@serve.ingress
-class GarchPredictorService:
-    def __init__(self):
-        pass
+# Modelos Pydantic
+class VolatilityRequest(BaseModel):
+    window_size: int = 180
+    assets: Optional[str] = None
 
-    async def calculate_volatility(self, returns: np.ndarray, window_size: int = 180, asset_name: str = "Asset") -> Dict:
-        """
-        Calcula volatilidad GARCH para un asset específico usando Ray
-        Esta función se ejecuta en paralelo para cada asset
-        """
-        try:
-            start_time = time.time()
+class RollingVarianceRequest(BaseModel):
+    window: int = 180
+    n_simulations: int = 5
+
+# Funciones Ray remotas para paralelización
+@ray.remote
+def calculate_garch_volatility(returns: np.ndarray, window_size: int = 180, asset_name: str = "Asset") -> Dict:
+    """Calcula volatilidad GARCH para un asset específico usando Ray"""
+    try:
+        start_time = time.time()
+        
+        if len(returns) < window_size:
+            window_size = len(returns) // 2
+        
+        if window_size < 10:
+            raise ValueError(f"Insuficientes datos para {asset_name}: {len(returns)} returns")
+        
+        # Modelo GARCH simplificado
+        alpha, beta, omega = 0.1, 0.85, 0.05
+        
+        rolling_variance = pd.Series(returns).rolling(window_size).var()
+        
+        garch_variance = []
+        current_var = rolling_variance.dropna().iloc[0] if len(rolling_variance.dropna()) > 0 else 0.01
+        
+        for i, ret in enumerate(returns):
+            if i >= window_size:
+                # GARCH(1,1): σ²t = ω + α*ε²t-1 + β*σ²t-1
+                new_var = omega + alpha * (ret ** 2) + beta * current_var
+                garch_variance.append(new_var)
+                current_var = new_var
+        
+        if not garch_variance:
+            garch_variance = [current_var]
             
-            if len(returns) < window_size:
-                window_size = len(returns) // 2
-            
-            if window_size < 10:
-                raise ValueError(f"Insuficientes datos para {asset_name}: {len(returns)} returns")
-            
-            # Calcular varianza histórica móvil
-            rolling_variance = pd.Series(returns).rolling(window_size).var()
-            
-            # Modelo GARCH simplificado pero realista
-            # Parámetros GARCH típicos
-            alpha = 0.1  # Peso de los shocks recientes
-            beta = 0.85  # Peso de la varianza condicional anterior
-            omega = 0.05  # Término constante
-            
-            # Calcular varianza condicional GARCH
-            garch_variance = []
-            current_var = rolling_variance.dropna().iloc[0] if len(rolling_variance.dropna()) > 0 else 0.01
-            
-            for i, ret in enumerate(returns):
-                if i >= window_size:
-                    # GARCH(1,1): σ²t = ω + α*ε²t-1 + β*σ²t-1
-                    new_var = omega + alpha * (ret ** 2) + beta * current_var
-                    garch_variance.append(new_var)
-                    current_var = new_var
-            
-            if not garch_variance:
-                garch_variance = [current_var]
-            
-            # Predicción de volatilidad (siguiente período)
-            next_var_prediction = omega + alpha * (returns[-1] ** 2) + beta * garch_variance[-1]
-            next_vol_prediction = np.sqrt(next_var_prediction * 252)  # Anualizada
-            
-            # Calcular métricas adicionales
-            historical_vol = np.std(returns) * np.sqrt(252)
-            current_vol = np.sqrt(garch_variance[-1] * 252) if garch_variance else historical_vol
-            
-            # Generar señal de trading basada en volatilidad
-            vol_percentile = np.percentile([np.sqrt(v * 252) for v in garch_variance], 50) if garch_variance else historical_vol
-            
-            if next_vol_prediction > vol_percentile * 1.2:
-                signal = -1  # Alta volatilidad -> señal bajista
-                signal_strength = min((next_vol_prediction / vol_percentile - 1) * 2, 1.0)
-            elif next_vol_prediction < vol_percentile * 0.8:
-                signal = 1   # Baja volatilidad -> señal alcista
-                signal_strength = min((1 - next_vol_prediction / vol_percentile) * 2, 1.0)
-            else:
-                signal = 0   # Volatilidad normal
-                signal_strength = 0.0
-            
-            result = {
-                'asset': asset_name,
-                'observations_used': len(returns),
-                'window_size': window_size,
-                'historical_volatility': float(historical_vol),
-                'current_volatility': float(current_vol),
-                'predicted_volatility': float(next_vol_prediction),
-                'volatility_percentile': float(vol_percentile),
-                'trading_signal': int(signal),
-                'signal_strength': float(signal_strength),
-                'signal_interpretation': 'BULLISH' if signal == 1 else 'BEARISH' if signal == -1 else 'NEUTRAL',
-                'volatility_regime': 'HIGH' if current_vol > vol_percentile * 1.2 else 'LOW' if current_vol < vol_percentile * 0.8 else 'NORMAL',
-                'processing_time': time.time() - start_time
-            }
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f"Error calculando GARCH para {asset_name}: {e}")
-            return {
-                'asset': asset_name,
-                'error': str(e),
-                'processing_time': time.time() - start_time if 'start_time' in locals() else 0
-            }
+        # Predicción de volatilidad (siguiente período)
+        next_var_prediction = omega + alpha * (returns[-1] ** 2) + beta * garch_variance[-1]
+        next_vol_prediction = np.sqrt(next_var_prediction * 252)  # Anualizada
+        
+        # Calcular métricas adicionales
+        historical_vol = np.std(returns) * np.sqrt(252)
+        current_vol = np.sqrt(garch_variance[-1] * 252) if garch_variance else historical_vol
+        
+        # Generar señal de trading basada en volatilidad
+        vol_percentile = np.percentile([np.sqrt(v * 252) for v in garch_variance], 50) if garch_variance else historical_vol
+        
+        if next_vol_prediction > vol_percentile * 1.2:
+            signal = -1  # Alta volatilidad -> señal bajista
+            signal_strength = min((next_vol_prediction / vol_percentile - 1) * 2, 1.0)
+        elif next_vol_prediction < vol_percentile * 0.8:
+            signal = 1   # Baja volatilidad -> señal alcista
+            signal_strength = min((1 - next_vol_prediction / vol_percentile) * 2, 1.0)
+        else:
+            signal = 0   # Volatilidad normal
+            signal_strength = 0.0
+        
+        result = {
+            'asset': asset_name,
+            'observations_used': len(returns),
+            'window_size': window_size,
+            'historical_volatility': float(historical_vol),
+            'current_volatility': float(current_vol),
+            'predicted_volatility': float(next_vol_prediction),
+            'volatility_percentile': float(vol_percentile),
+            'trading_signal': int(signal),
+            'signal_strength': float(signal_strength),
+            'signal_interpretation': 'BULLISH' if signal == 1 else 'BEARISH' if signal == -1 else 'NEUTRAL',
+            'volatility_regime': 'HIGH' if current_vol > vol_percentile * 1.2 else 'LOW' if current_vol < vol_percentile * 0.8 else 'NORMAL',
+            'processing_time': time.time() - start_time
+        }
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error calculando GARCH para {asset_name}: {e}")
+        return {
+            'asset': asset_name,
+            'error': str(e),
+            'processing_time': time.time() - start_time if 'start_time' in locals() else 0
+        }
 
 @ray.remote
 def process_market_data_chunk(data_chunk: pd.DataFrame, chunk_id: int) -> Dict:
@@ -208,17 +209,23 @@ def generate_multiple_volatility_forecasts(returns: np.ndarray, horizons: List[i
             'processing_time': time.time() - start_time if 'start_time' in locals() else 0
         }
 
+# Endpoints FastAPI
+@app.get("/")
+def read_root():
+    return {"message": "Ray GARCH Predictor funcionando", "service": "ray-garch-predictor"}
+
 @app.get("/status")
 def read_status():
     """Status del servicio Ray GARCH"""
     return {
         "status": "Ray-Powered GARCH Predictor funcionando",
         "ray_initialized": ray.is_initialized(),
-        "ray_cluster_resources": ray.cluster_resources() if ray.is_initialized() else None
+        "ray_cluster_resources": ray.cluster_resources() if ray.is_initialized() else {},
+        "available_resources": ray.available_resources() if ray.is_initialized() else {}
     }
 
 @app.get("/load-market-data")
-async def load_market_data():
+def load_market_data():
     """Carga datos de mercado usando Ray para procesamiento paralelo"""
     try:
         logger.info("Cargando datos de mercado con Ray")
@@ -306,11 +313,14 @@ async def load_market_data():
         raise HTTPException(status_code=500, detail=f"Error cargando datos: {str(e)}")
 
 @app.post("/predict-volatility")
-async def predict_volatility(window_size: int = 180, assets: Optional[str] = None):
+def predict_volatility(request: VolatilityRequest):
     """Predice volatilidad usando modelo GARCH paralelo con Ray"""
     try:
         logger.info("Iniciando predicción de volatilidad con Ray")
         start_time = time.time()
+        
+        window_size = request.window_size
+        assets = request.assets
         
         # Cargar datos
         daily_file = 'simulated_daily_data.csv'
@@ -429,9 +439,11 @@ async def predict_volatility(window_size: int = 180, assets: Optional[str] = Non
         raise HTTPException(status_code=500, detail=f"Error prediciendo volatilidad: {str(e)}")
 
 @app.get("/calculate-rolling-variance")
-async def calculate_rolling_variance(window: int = 180, n_simulations: int = 5):
+def calculate_rolling_variance(request: RollingVarianceRequest):
     """Calcula varianza móvil para múltiples simulaciones usando Ray"""
     try:
+        window = request.window
+        n_simulations = request.n_simulations
         logger.info(f"Calculando varianza móvil para {n_simulations} simulaciones con Ray")
         
         # PARALELIZACIÓN: Crear múltiples simulaciones en paralelo
@@ -517,6 +529,21 @@ def shutdown_event():
     if ray.is_initialized():
         ray.shutdown()
 
+# Ray Serve Deployment
+@serve.deployment
+class FastAPIDeployment:
+    def __init__(self):
+        self.app = app
+
+    def __call__(self, request):
+        return self.app
+
+# Para Ray Serve
+deployment = FastAPIDeployment.bind()
+
+# Ejecutar con Ray Serve
 if __name__ == "__main__":
     import uvicorn
+    
+    # Iniciar con uvicorn para desarrollo local
     uvicorn.run(app, host="0.0.0.0", port=8000)
