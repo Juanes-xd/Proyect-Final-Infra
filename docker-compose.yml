@@ -38,3 +38,62 @@ services:
       - SERVICE_NAME=Intraday Strategy Engine
     depends_on:
       - garch-predictor
+
+  # Ray Services - Distributed Processing
+  ray-sentiment-analyzer:
+    build: 
+      context: ./ray_services
+      dockerfile: sentiment_analyzer/Dockerfile
+    ports:
+      - "8005:8000"
+    container_name: ray-sentiment-analyzer
+    environment:
+      - SERVICE_NAME=Ray Sentiment Analyzer
+      - RAY_ADDRESS=auto
+    volumes:
+      - ./ray_services/data:/app/data
+
+  ray-portfolio-manager:
+    build: 
+      context: ./ray_services
+      dockerfile: portfolio_manager/Dockerfile
+    ports:
+      - "8006:8000"
+    container_name: ray-portfolio-manager
+    environment:
+      - SERVICE_NAME=Ray Portfolio Manager
+      - RAY_ADDRESS=auto
+    depends_on:
+      - ray-sentiment-analyzer
+
+  ray-garch-predictor:
+    build: 
+      context: ./ray_services
+      dockerfile: garch_predictor/Dockerfile
+    ports:
+      - "8007:8000"
+    container_name: ray-garch-predictor
+    environment:
+      - SERVICE_NAME=Ray GARCH Predictor
+      - RAY_ADDRESS=auto
+    volumes:
+      - ./ray_services/data:/app/data
+
+  ray-intraday-strategy:
+    build: 
+      context: ./ray_services
+      dockerfile: intraday_strategy/Dockerfile
+    ports:
+      - "8008:8000"
+    container_name: ray-intraday-strategy
+    environment:
+      - SERVICE_NAME=Ray Intraday Strategy
+      - RAY_ADDRESS=auto
+    volumes:
+      - ./ray_services/data:/app/data
+    depends_on:
+      - ray-garch-predictor
+
+networks:
+  default:
+    name: unified-services-network
