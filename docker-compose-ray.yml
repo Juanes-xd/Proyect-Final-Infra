@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   # Servicios originales
@@ -38,7 +38,7 @@ services:
     depends_on:
       - garch-predictor
 
-  # Nuevos servicios con Ray
+  # Servicios Ray optimizados con Ray Serve
   sentiment-analyzer-ray:
     build:
       context: ./ray_services
@@ -50,7 +50,13 @@ services:
       - SERVICE_NAME=Ray Sentiment Analyzer
       - RAY_DISABLE_IMPORT_WARNING=1
       - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
-    shm_size: 1g
+      - PYTHONPATH=/app
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    volumes:
+      - ./ray_services/data:/app/data
+      - ray_tmp:/tmp/ray
+    shm_size: 2g
+ 
 
   garch-predictor-ray:
     build:
@@ -63,7 +69,13 @@ services:
       - SERVICE_NAME=Ray GARCH Predictor
       - RAY_DISABLE_IMPORT_WARNING=1
       - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
-    shm_size: 1g
+      - PYTHONPATH=/app
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    volumes:
+      - ./ray_services/data:/app/data
+      - ray_tmp:/tmp/ray
+    shm_size: 2g
+
 
   portfolio-manager-ray:
     build:
@@ -76,7 +88,13 @@ services:
       - SERVICE_NAME=Ray Portfolio Manager
       - RAY_DISABLE_IMPORT_WARNING=1
       - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
-    shm_size: 1g
+      - PYTHONPATH=/app
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    volumes:
+      - ./ray_services/data:/app/data
+      - ray_tmp:/tmp/ray
+    shm_size: 2g
+  
 
   intraday-strategy-ray:
     build:
@@ -89,7 +107,17 @@ services:
       - SERVICE_NAME=Ray Intraday Strategy Engine
       - RAY_DISABLE_IMPORT_WARNING=1
       - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
-    shm_size: 1g
+      - PYTHONPATH=/app
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    volumes:
+      - ./ray_services/data:/app/data
+      - ray_tmp:/tmp/ray
+    shm_size: 2g
+   
+
+volumes:
+  ray_tmp:
+    driver: local
 
 networks:
   default:
