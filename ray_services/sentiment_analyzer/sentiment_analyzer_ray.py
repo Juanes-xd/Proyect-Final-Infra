@@ -11,8 +11,10 @@ import os
 from typing import Dict, List
 import logging
 import time
+import traceback
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import uvicorn
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -57,48 +59,60 @@ def process_sentiment_batch(texts: List[str]) -> List[Dict]:
 
 @ray.remote
 def load_and_process_sentiment_data():
-    """Carga y procesa datos de sentiment usando Ray"""
+    """Carga y procesa datos de sentiment de forma paralela"""
     try:
-        logger.info("Iniciando carga de datos con Ray")
-        csv_file = 'sentiment_data.csv'
-
-        if not os.path.exists(csv_file):
-            logger.info("Generando datos sintéticos grandes para demostrar Ray")
-            n_records = 50000
-            tickers = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'META', 'NFLX']
-
-            sentiment_data = {
-                'Date': pd.date_range('2023-01-01', periods=n_records, freq='H'),
-                'ticker': np.random.choice(tickers, n_records),
-                'tweet_likes': np.random.randint(1, 1000, n_records),
-                'tweet_reposts': np.random.randint(1, 500, n_records),
-                'sentiment_score': np.random.uniform(-1, 1, n_records),
-                'engagement_ratio': np.random.uniform(1.0, 5.0, n_records),
-            }
-
-            df = pd.DataFrame(sentiment_data)
-            df.to_csv(csv_file, index=False)
-            logger.info(f"Datos generados y guardados en {csv_file}")
+        start_time = time.time()
+        
+        # Verificar si existe el archivo
+        data_file = 'data/sentiment_data.csv'
+        
+        if os.path.exists(data_file):
+            logger.info(f"Cargando datos desde archivo: {data_file}")
+            df = pd.read_csv(data_file)
         else:
-            df = pd.read_csv(csv_file)
-            logger.info(f"Datos cargados desde {csv_file}")
-
+            # Generar datos sintéticos
+            logger.info("Generando datos sintéticos")
+            n_records = 10000
+            tickers = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'META', 'NFLX']
+            
+            # IMPORTANTE: Usar nombres de columnas correctos
+            df = pd.DataFrame({
+                'ticker': np.random.choice(tickers, n_records),  # ✅ Nombre correcto
+                'text': [f"Sentiment text for analysis {i}" for i in range(n_records)],
+                'sentiment_score': np.random.uniform(-1, 1, n_records),
+                'timestamp': pd.date_range('2024-01-01', periods=n_records, freq='1min'),
+                'engagement': np.random.randint(1, 1000, n_records),
+                'source': np.random.choice(['twitter', 'reddit', 'news'], n_records)
+            })
+            
+            # Guardar para uso futuro
+            os.makedirs('data', exist_ok=True)
+            df.to_csv(data_file, index=False)
+            logger.info(f"Datos guardados en: {data_file}")
+        
+        logger.info(f"Datos cargados: {len(df)} registros, columnas: {df.columns.tolist()}")
+        logger.info(f"Tickers únicos: {df['ticker'].unique().tolist() if 'ticker' in df.columns else 'NO TICKER COLUMN'}")
         return df
+        
     except Exception as e:
         logger.error(f"Error cargando datos: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return None
 
 @ray.remote
 def calculate_ticker_sentiment(ticker_data: pd.DataFrame) -> Dict:
-    """Calcula métricas de sentimiento para un ticker específico"""
+    """Calcula métricas de sentimiento para un ticker específico usando las columnas reales del dataset"""
     try:
         metrics = {
-            'avg_sentiment': ticker_data['sentiment_score'].mean(),
-            'sentiment_volatility': ticker_data['sentiment_score'].std(),
-            'total_engagement': ticker_data['engagement_ratio'].sum(),
-            'positive_ratio': (ticker_data['sentiment_score'] > 0.1).mean(),
-            'negative_ratio': (ticker_data['sentiment_score'] < -0.1).mean(),
-            'total_tweets': len(ticker_data)
+            'avg_sentiment': ticker_data['twitterSentiment'].mean(),
+            'sentiment_volatility': ticker_data['twitterSentiment'].std(),
+            'total_engagement': ticker_data['twitterLikes'].sum() + ticker_data['twitterComments'].sum(),
+            'total_posts': ticker_data['twitterPosts'].sum(),
+            'total_impressions': ticker_data['twitterImpressions'].sum(),
+            'positive_ratio': (ticker_data['twitterSentiment'] > 0.1).mean(),
+            'negative_ratio': (ticker_data['twitterSentiment'] < -0.1).mean(),
+            'total_records': len(ticker_data)
         }
         return metrics
     except Exception as e:
@@ -117,6 +131,73 @@ def read_status():
         "ray_status": "connected" if ray.is_initialized() else "disconnected",
         "available_resources": ray.available_resources() if ray.is_initialized() else {}
     }
+
+@app.get("/available-tickers")
+def get_available_tickers():
+    """Obtiene lista de tickers disponibles usando la columna symbol"""
+    try:
+        data_future = load_and_process_sentiment_data.remote()
+        df = ray.get(data_future)
+        
+        if df is not None:
+            if 'symbol' in df.columns:
+                available_tickers = df['symbol'].unique().tolist()
+                return {
+                    "available_tickers": available_tickers,
+                    "total_records": len(df),
+                    "columns": df.columns.tolist(),
+                    "note": "Usando columna 'symbol' como tickers"
+                }
+            elif 'platform' in df.columns:
+                available_platforms = df['platform'].unique().tolist()
+                return {
+                    "available_platforms": available_platforms,
+                    "total_records": len(df),
+                    "columns": df.columns.tolist(),
+                    "note": "Usando plataformas en lugar de tickers"
+                }
+            else:
+                return {
+                    "available_tickers": [],
+                    "total_records": len(df),
+                    "columns": df.columns.tolist(),
+                    "note": "No hay columna ticker o platform disponible"
+                }
+        else:
+            return {"error": "No se pudieron cargar los datos"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/debug-data")
+def debug_data():
+    """Debug: Ver estructura de los datos"""
+    try:
+        data_future = load_and_process_sentiment_data.remote()
+        df = ray.get(data_future)
+        
+        if df is not None:
+            # Convertir dtypes a strings para evitar problemas de serialización JSON
+            dtypes_dict = {}
+            for col in df.columns:
+                dtypes_dict[col] = str(df[col].dtype)
+            
+            # Obtener sample data y manejar valores NaN
+            sample_data = df.head(3).fillna("NULL").to_dict('records')
+            
+            return {
+                "columns": df.columns.tolist(),
+                "shape": list(df.shape),  # Convertir tuple a list
+                "dtypes": dtypes_dict,
+                "sample_data": sample_data,
+                "unique_tickers": df['ticker'].unique().tolist() if 'ticker' in df.columns else [],
+                "has_ticker_column": 'ticker' in df.columns,
+                "all_columns": df.columns.tolist()
+            }
+        else:
+            return {"error": "DataFrame es None"}
+    except Exception as e:
+        import traceback
+        return {"error": str(e), "traceback": traceback.format_exc()}
 
 @app.post("/analyze-sentiment")
 def analyze_sentiment(request: SentimentRequest):
@@ -153,7 +234,7 @@ def analyze_sentiment(request: SentimentRequest):
 
 @app.post("/analyze-tickers")
 def analyze_tickers(request: TickerRequest):
-    """Analiza métricas de sentimiento para múltiples tickers usando Ray"""
+    """Analiza métricas de sentimiento para múltiples tickers usando la columna symbol"""
     try:
         start_time = time.time()
         
@@ -165,18 +246,36 @@ def analyze_tickers(request: TickerRequest):
         if df is None:
             raise HTTPException(status_code=500, detail="Error cargando datos de sentiment")
         
-        # Procesar cada ticker en paralelo
+        # Debug: verificar estructura de datos
+        logger.info(f"DataFrame columns: {df.columns.tolist()}")
+        logger.info(f"DataFrame shape: {df.shape}")
+        
+        # Verificar que existe la columna symbol
+        if 'symbol' not in df.columns:
+            raise HTTPException(status_code=500, detail=f"Columna 'symbol' no encontrada. Columnas disponibles: {df.columns.tolist()}")
+        
+        # Procesar cada ticker usando la columna symbol
         ticker_futures = []
         for ticker in request.tickers:
-            ticker_data = df[df['ticker'] == ticker]
-            if not ticker_data.empty:
-                future = calculate_ticker_sentiment.remote(ticker_data)
-                ticker_futures.append((ticker, future))
+            try:
+                ticker_data = df[df['symbol'] == ticker]
+                logger.info(f"Ticker {ticker}: {len(ticker_data)} registros encontrados")
+                if not ticker_data.empty:
+                    future = calculate_ticker_sentiment.remote(ticker_data)
+                    ticker_futures.append((ticker, future))
+                else:
+                    logger.warning(f"No se encontraron datos para ticker: {ticker}")
+            except Exception as ticker_error:
+                logger.error(f"Error procesando ticker {ticker}: {ticker_error}")
         
         # Obtener resultados
         ticker_results = {}
         for ticker, future in ticker_futures:
-            ticker_results[ticker] = ray.get(future)
+            try:
+                ticker_results[ticker] = ray.get(future)
+            except Exception as result_error:
+                logger.error(f"Error obteniendo resultado para {ticker}: {result_error}")
+                ticker_results[ticker] = {"error": str(result_error)}
         
         processing_time = time.time() - start_time
         
@@ -249,7 +348,5 @@ deployment = FastAPIDeployment.bind()
 
 # Ejecutar con Ray Serve
 if __name__ == "__main__":
-    import uvicorn
-    
-    # Iniciar con uvicorn para desarrollo local
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Iniciar con uvicorn - Ray Remote + FastAPI + Ray Serve
+    uvicorn.run(app, host="0.0.0.0", port=8005)
