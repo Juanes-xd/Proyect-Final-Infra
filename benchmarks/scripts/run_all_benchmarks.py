@@ -42,8 +42,8 @@ def main():
             "wait_time": 3
         },
         {
-            "command": "python benchmark_original.py",
-            "description": "Benchmark Original (Métricas Individuales)",
+            "command": "python benchmark_functional.py",
+            "description": "Benchmark Funcional (Métricas Individuales)",
             "wait_time": 3
         },
         {

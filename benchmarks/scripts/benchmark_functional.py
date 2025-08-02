@@ -279,8 +279,8 @@ class MicroserviceBenchmark:
             
             if concurrent_data['avg_response_time'] > 2.0:
                 print("  - ⚠️  PROBLEMA: Tiempo de respuesta alto bajo carga")
-    
-    def save_results(self, filename='benchmark_results.json'):
+
+    def save_results(self, filename='../results/benchmark_results.json'):
         """Guarda resultados en archivo JSON"""
         with open(filename, 'w') as f:
             json.dump(self.results, f, indent=2, default=str)
