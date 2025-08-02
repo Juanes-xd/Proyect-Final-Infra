@@ -1,6 +1,7 @@
-version: '3.8'
+
 
 services:
+  # Microservicios originales sin ray
   # Miniproyecto 2: Twitter Sentiment Strategy
   sentiment-analyzer:
     build: ./miniproyecto2/microservicio1
@@ -38,3 +39,7 @@ services:
       - SERVICE_NAME=Intraday Strategy Engine
     depends_on:
       - garch-predictor
+
+networks:
+  default:
+    name: unified-services-network

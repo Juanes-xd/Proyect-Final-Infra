@@ -1,0 +1,159 @@
+﻿Enunciado del Proyecto Final Del Curso de Infraestructuras Paralelas y Distribuidas
+________________
+
+
+1. Motivación
+En el contexto actual, las aplicaciones de Machine Learning requieren cada vez más escalabilidad y capacidad de procesamiento en paralelo para atender grandes volúmenes de datos y ofrecer respuesta en tiempo real. Ray es un framework de Python diseñado para paralelizar y distribuir tareas de cómputo de forma sencilla, mientras que la arquitectura de microservicios en la nube permite desplegar y escalar componentes de manera independiente. Este proyecto integra ambos enfoques para que los estudiantes apliquen conceptos de paralelismo y distribución en un problema práctico de ML, desde la paralelización del código hasta el despliegue de microservicios y un cliente que consuma las APIs desarrolladas .
+________________
+
+
+2. Objetivo del Proyecto
+Desarrollar, desplegar y evaluar una aplicación de Machine Learning que:
+* Paralelice el procesamiento de datos y el entrenamiento/inferencia con Ray, utilizando decoradores como @ray.remote y @ray.serve.
+* Distribuya la aplicación en microservicios sobre instancias EC2 de AWS, exponiendo funcionalidades clave mediante APIs creadas con alguna librería en Python, FastAPI o Flask.
+* Implemente un cliente frontend que consuma dichas APIs para realizar inferencias de forma interactiva.
+
+________________
+
+
+3. Descripción de las etapas
+   3.1. Paralelización con Ray
+   * Identificar el núcleo computacional del problema de ML (e.g., identificar la parte más costosa computacional. Hacer la observación del comportamiento de su aplicación (profiling) y decidir qué parte del código es candidato a ser paralelizado y/o distribuido).
+   * Refactorizar funciones críticas para que sean tareas Ray (@ray.remote) y/o endpoints de servicio (@ray.serve).
+   3.2. Containerización y despliegue
+   * Empaquetar cada componente (servicios Ray, APIs FastAPI o Flask) en contenedores Docker.
+   * Provisionar instancias EC2 en AWS y orquestar el despliegue (puede usarse Docker Compose).
+   3.3. Desarrollo del cliente
+   * Crear una interfaz web o de línea de comandos que invoque las APIs desplegadas y muestre resultados de inferencia.
+________________
+
+
+4. Entregables
+   4.1. Repositorio de código completo en GitHub (o equivalente), con
+   * Carpetas separadas para la paralelización (Ray), APIs y cliente.
+   * README.md con instrucciones de instalación, ejecución y despliegue en AWS.
+   4.2. Informe técnico (mín. 8 páginas) que incluya:
+   * Diseño de la arquitectura (diagramas).
+   * Detalles de paralelización y distribución.
+   * Resultados de rendimiento (benchmarking).
+   4.3. Scripts de despliegue (e.g. Bash) y/o archivos docker-compose.yml.
+   4.4. Cliente frontend funcionando, con código y guías de uso.
+   4.5. Presentación (diapositivas + video) de máximo 10 minutos para exponer metodología y resultados.
+________________
+
+
+5. Rúbrica de Evaluación
+Estos son los criterios de evaluación organizaos por Criterio, Descripción y Peso porcentual
+	
+* Diseño arquitectónico y selección de tecnologías
+Claridad y coherencia en la arquitectura propuesta; justificación del uso de Ray, microservicios y AWS EC2.
+20%
+
+* Implementación paralela con Ray
+Uso correcto de @ray.remote y @ray.serve; eficiencia en la paralelización y correcta gestión de dependencias.
+25%
+
+* Implementación de microservicios y APIs 
+Contenerización adecuada, despliegue en EC2, diseño REST de las APIs y manejo de errores.
+20%
+
+* Benchmarking y análisis de rendimiento
+Comparativa secuencial vs. paralelo vs. distribuido; presentación de métricas, gráficos y conclusiones bien fundamentadas.
+20%
+
+* Documentación, calidad de código y presentación final
+Legibilidad del código, claridad del README.md, calidad del informe y eficacia de la presentación oral.
+15%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Prueba
+¡Perfecto! 🎉 He actualizado completamente el proyecto para que use los archivos CSV reales del proyecto-test1. Aquí está el resumen de los cambios realizados:
+✅ Cambios Implementados
+📁 Archivos CSV Copiados
+   * sentiment_data.csv → Copiado a ambos microservicios del miniproyecto 2
+   * simulated_daily_data.csv → Copiado a ambos microservicios del miniproyecto 3
+   * simulated_5min_data.csv → Copiado a ambos microservicios del miniproyecto 3
+🔄 Código Actualizado
+Miniproyecto 2 - Twitter Sentiment:
+   * ✅ Microservicio 1: Ahora carga sentiment_data.csv real
+   * ✅ Calcula engagement ratios con datos reales
+   * ✅ Maneja diferentes estructuras de columnas dinámicamente
+   * ✅ Proporciona información sobre las columnas disponibles
+Miniproyecto 3 - GARCH Model:
+   * ✅ Microservicio 1: Carga simulated_daily_data.csv y simulated_5min_data.csv reales
+   * ✅ Calcula retornos logarítmicos con precios reales
+   * ✅ Predice volatilidad usando datos históricos reales
+   * ✅ Microservicio 2: Usa datos intraday reales para señales de trading
+   * ✅ Calcula RSI y Bandas de Bollinger con precios reales
+📄 Documentación Actualizada
+   * ✅ README.md actualizado para reflejar el uso de datos reales
+   * ✅ Información sobre los archivos CSV incluidos
+   * ✅ Características técnicas actualizadas
+🚀 Beneficios del Cambio
+   1. Datos Reales: Los microservicios ahora procesan los mismos datos que el notebook original
+   2. Consistencia: Los resultados serán consistentes con el análisis original
+   3. Autenticidad: Las APIs devuelven métricas basadas en datos financieros reales
+   4. Completitud: Cada microservicio tiene acceso a todos los datos necesarios
+🔧 Cómo Ejecutar Ahora
+Los comandos siguen siendo los mismos:
+cd microservicios-proyecto
+docker-compose up --build
+Pero ahora verás datos reales en lugar de simulados cuando consultes los endpoints:
+   * http://localhost:8001/load-sentiment-data - Datos de sentiment reales
+   * http://localhost:8003/load-market-data - Datos de mercado reales
+   * http://localhost:8004/calculate-intraday-signals - Señales basadas en datos reales
+¡Los microservicios ahora están completamente integrados con los datos reales del proyecto original! 🎯
