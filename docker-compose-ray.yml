@@ -7,7 +7,7 @@ services:
       context: ./ray_services
       dockerfile: sentiment_analyzer/Dockerfile
     ports:
-      - "8005:8000"
+      - "8005:8005"
     container_name: ray-sentiment-analyzer
     environment:
       - SERVICE_NAME=Ray Sentiment Analyzer
