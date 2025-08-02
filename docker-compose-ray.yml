@@ -1,0 +1,87 @@
+
+
+services:
+  # Servicios Ray optimizados con Ray Serve
+  sentiment-analyzer-ray:
+    build:
+      context: ./ray_services
+      dockerfile: sentiment_analyzer/Dockerfile
+    ports:
+      - "8005:8005"
+    container_name: ray-sentiment-analyzer
+    environment:
+      - SERVICE_NAME=Ray Sentiment Analyzer
+      - RAY_DISABLE_IMPORT_WARNING=1
+      - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
+      - PYTHONPATH=/app
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    volumes:
+      - ./ray_services/data:/app/data
+      - ray_tmp:/tmp/ray
+    shm_size: 2g
+      
+
+  garch-predictor-ray:
+    build:
+      context: ./ray_services
+      dockerfile: garch_predictor/Dockerfile
+    ports:
+      - "8006:8000"
+    container_name: ray-garch-predictor
+    environment:
+      - SERVICE_NAME=Ray GARCH Predictor
+      - RAY_DISABLE_IMPORT_WARNING=1
+      - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
+      - PYTHONPATH=/app
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    volumes:
+      - ./ray_services/data:/app/data
+      - ray_tmp:/tmp/ray
+    shm_size: 2g
+
+
+  portfolio-manager-ray:
+    build:
+      context: ./ray_services
+      dockerfile: portfolio_manager/Dockerfile
+    ports:
+      - "8007:8000"
+    container_name: ray-portfolio-manager
+    environment:
+      - SERVICE_NAME=Ray Portfolio Manager
+      - RAY_DISABLE_IMPORT_WARNING=1
+      - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
+      - PYTHONPATH=/app
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    volumes:
+      - ./ray_services/data:/app/data
+      - ray_tmp:/tmp/ray
+    shm_size: 2g
+  
+
+  intraday-strategy-ray:
+    build:
+      context: ./ray_services
+      dockerfile: intraday_strategy/Dockerfile
+    ports:
+      - "8008:8000"
+    container_name: ray-intraday-strategy
+    environment:
+      - SERVICE_NAME=Ray Intraday Strategy Engine
+      - RAY_DISABLE_IMPORT_WARNING=1
+      - RAY_OBJECT_STORE_ALLOW_SLOW_STORAGE=1
+      - PYTHONPATH=/app
+      - RAY_SERVE_ENABLE_EXPERIMENTAL_STREAMING=1
+    volumes:
+      - ./ray_services/data:/app/data
+      - ray_tmp:/tmp/ray
+    shm_size: 2g
+      
+
+volumes:
+  ray_tmp:
+    driver: local
+
+networks:
+  default:
+    name: trading-microservices-network
