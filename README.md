@@ -1,114 +1,156 @@
-# 🚀 PROYECTO MICROSERVICIOS CON RAY REMOTE - GUÍA COMPLETA
+# 🚀 PROYECTO FINAL - INFRAESTRUCTURAS DISTRIBUIDAS Y PARALELAS
 
-Este proyecto implementa microservicios de trading financiero optimizados con **Ray Remote** para paralelización y alta escalabilidad.
+Este proyecto implementa **tres arquitecturas diferentes** para sistemas de trading algorítmico, comparando rendimiento y escalabilidad entre implementaciones secuenciales, microservicios tradicionales y computación distribuida con Ray.
 
-## � **RESULTADOS COMPROBADOS CON RAY REMOTE**
+## 🎯 **OBJETIVOS DEL PROYECTO**
 
-✅ **+52.1% mejora** en throughput de optimización de portafolios  
-✅ **+23.6% mejora** en predicción GARCH  
-✅ **8 microservicios funcionando** correctamente  
-✅ **100% tasa de éxito** en implementación Ray Remote  
-✅ **22.17 req/s** throughput promedio general  
-
-### 🎯 **CRITERIO ACADÉMICO CUMPLIDO**
-**"Implementación paralela con Ray (25%)" - ✅ COMPLETAMENTE SATISFECHO**
+- **Implementación Secuencial**: Jupyter Notebook con procesamiento tradicional
+- **Microservicios**: Arquitectura distribuida con Docker y FastAPI  
+- **Ray Distribuido**: Computación paralela y distribuida con Ray framework
+- **Benchmarking Comparativo**: Análisis de rendimiento entre las tres implementaciones
 
 ---
 
-## 🏗️ **MANUAL DE INSTALACIÓN Y USO**
+## 🏗️ **ARQUITECTURAS IMPLEMENTADAS**
 
-### 📋 **PREREQUISITOS**
-Antes de comenzar, asegúrate de tener instalado:
+### 1️⃣ **Implementación Secuencial**
+- **Ubicación**: `Instrucciones Proyecto/Algorithmic_Trading_Machine_Learning_Quant_Strategies.ipynb`
+- **Tecnología**: Jupyter Notebook, Python tradicional
+- **Componentes**: Análisis de sentimientos, predicción GARCH, estrategias intraday, gestión de portfolio
+
+### 2️⃣ **Miniproyecto 2: Twitter Sentiment Strategy**
+- **Ubicación**: `miniproyecto2/`
+- **Arquitectura**: Microservicios con Docker
+- **Servicios**:
+  - `Twitter Sentiment Analyzer` (puerto 8001)
+  - `Portfolio Manager` (puerto 8002)
+
+### 3️⃣ **Miniproyecto 3: Intraday Strategy Using GARCH Model**
+- **Ubicación**: `miniproyecto3/`
+- **Arquitectura**: Microservicios con Docker
+- **Servicios**:
+  - `GARCH Volatility Predictor` (puerto 8003)
+  - `Intraday Strategy Engine` (puerto 8004)
+
+### 4️⃣ **Ray Distributed Services**
+- **Ubicación**: `ray_services/`
+- **Arquitectura**: Computación distribuida con Ray
+- **Servicios**:
+  - `Ray Sentiment Analyzer` (puerto 8005)
+  - `Ray GARCH Predictor` (puerto 8006)
+  - `Ray Intraday Strategy` (puerto 8007)
+  - `Ray Portfolio Manager` (puerto 8008)
+
+---
+
+## 📋 **PREREQUISITOS**
+
 ```bash
 - Docker Desktop
-- Python 3.9+
+- Python 3.11+
 - Git
+- 8GB RAM mínimo (recomendado 16GB para Ray)
 ```
 
-### ⚡ **SETUP SÚPER RÁPIDO** 
+## ⚡ **INSTALACIÓN Y USO**
 
-Sigue el setup manual paso a paso:
-
-### 🚀 **PASO 1: CONFIGURACIÓN INICIAL**
-
-1. **Clonar el repositorio**:
+### 🚀 **PASO 1: CLONAR REPOSITORIO**
 ```bash
 git clone <repo-url>
 cd Proyect-Final-Infra
 ```
 
-2. **Verificar estructura del proyecto**:
-```bash
-# El proyecto debe tener esta estructura:
-tree /f
-```
-
 ### 🔨 **PASO 2: CONSTRUCCIÓN DE SERVICIOS**
 
-1. **Construir todas las imágenes**:
+El proyecto incluye **dos archivos Docker Compose diferentes**:
+- `docker-compose.yml` - **Solo microservicios tradicionales** (miniproyecto2 + miniproyecto3)
+- `docker-compose-ray.yml` - **Servicios Ray distribuidos** (ray_services)
+
+**Opción A - Solo Microservicios Tradicionales:**
 ```bash
-docker-compose -f docker-compose-ray.yml build
+# Usar docker-compose.yml (4 servicios)
+docker-compose build --no-cache
+docker-compose up -d
 ```
 
-2. **Levantar todos los servicios**:
+**Opción B - Solo Servicios Ray Distribuidos:**
 ```bash
+# Usar docker-compose-ray.yml (4 servicios Ray)
+docker-compose -f docker-compose-ray.yml build --no-cache
 docker-compose -f docker-compose-ray.yml up -d
 ```
 
-3. **Verificar que todos estén funcionando**:
+### 🔍 **PASO 3: VERIFICACIÓN DE SERVICIOS**
+
+**Verificar contenedores activos:**
 ```bash
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 ```
 
-Deberías ver 8 servicios activos:
+**Servicios esperados según la opción elegida:**
+
+**Opción A (docker-compose.yml):**
 - `twitter-sentiment-analyzer` (puerto 8001)
 - `portfolio-manager` (puerto 8002) 
 - `garch-volatility-predictor` (puerto 8003)
 - `intraday-strategy-engine` (puerto 8004)
+
+**Opción B (docker-compose-ray.yml):**
 - `ray-sentiment-analyzer` (puerto 8005)
 - `ray-garch-predictor` (puerto 8006)
-- `ray-portfolio-manager` (puerto 8007)
-- `ray-intraday-strategy` (puerto 8008)
+- `ray-intraday-strategy` (puerto 8007)
+- `ray-portfolio-manager` (puerto 8008)
 
-### 📊 **PASO 3: EJECUTAR BENCHMARKING COMPLETO**
+**Opción C (ambos archivos):**
+- Todos los 8 servicios listados arriba
 
-Para demostrar las mejoras de rendimiento con Ray Remote:
+### 🧪 **PASO 4: PRUEBAS DE FUNCIONALIDAD**
 
-1. **Navegar a la carpeta de benchmarks**:
+**Verificar health checks según los servicios activos:**
 ```bash
+# Si usaste Opción A (docker-compose.yml) - Microservicios tradicionales
+curl http://localhost:8001/health
+curl http://localhost:8002/health
+curl http://localhost:8003/health
+curl http://localhost:8004/health
+
+# Si usaste Opción B (docker-compose-ray.yml) - Ray services
+curl http://localhost:8005/health
+curl http://localhost:8006/health
+curl http://localhost:8007/health
+curl http://localhost:8008/health
+
+# Si usaste Opción C (ambos archivos) - Todos los servicios
+# Ejecutar todos los curl de arriba
+```
+
+### 📊 **PASO 5: EJECUTAR BENCHMARKING COMPARATIVO**
+
+Para comparar el rendimiento entre las tres implementaciones:
+
+```bash
+# Configurar entorno Python
 cd benchmarks
-```
-
-2. **Instalar dependencias de Python**:
-```bash
 pip install -r requirements.txt
-```
 
-3. **Ejecutar benchmarks en orden**:
-```bash
+# Ejecutar benchmark completo
 cd scripts
-
-# Benchmark principal: Comparación Ray vs Secuencial
-python ray_comparison_benchmark.py
-
-# Análisis detallado de rendimiento Ray
-python ray_performance_benchmark.py
-
-# Identificación de cuellos de botella
-python identify_bottlenecks.py
-
-# Comparación A/B completa
-python compare_performance.py
+python comprehensive_benchmark.py
 ```
 
-4. **Ver resultados**:
-```bash
-cd ../results
-dir  # Windows
-ls   # Linux/Mac
-```
+**El benchmark ejecutará:**
+- ✅ Implementación secuencial (Jupyter)
+- ✅ Microservicios tradicionales (puertos 8001-8004)
+- ✅ Ray distribuido (puertos 8005-8008)
+- ✅ Comparación de métricas de rendimiento
 
-### 📈 **PASO 4: VERIFICAR RESULTADOS**
+### 📈 **PASO 6: ANÁLISIS DE RESULTADOS**
+
+Los resultados se guardan en `benchmarks/results/` e incluyen:
+- **Tiempo de ejecución** por implementación
+- **Throughput** (operaciones por segundo)
+- **Uso de recursos** (CPU, memoria)
+- **Escalabilidad** comparativa
 
 Los benchmarks generan varios archivos en `benchmarks/results/`:
 - `comparison_benchmark_YYYYMMDD_HHMMSS.txt` - Comparación principal
@@ -122,24 +164,32 @@ Los benchmarks generan varios archivos en `benchmarks/results/`:
 
 ```
 📁 Proyect-Final-Infra/
-├── 📁 miniproyecto2/                 # Microservicios originales
+---
+
+## 📂 **ESTRUCTURA DEL PROYECTO**
+
+```
+Proyect-Final-Infra/
+├── � Instrucciones Proyecto/        # Implementación Secuencial
+│   └── Algorithmic_Trading_Machine_Learning_Quant_Strategies.ipynb
+├── �📁 miniproyecto2/                 # Twitter Sentiment Strategy
 │   ├── 📁 microservicio1/            # Sentiment Analyzer (Puerto 8001)
 │   └── 📁 microservicio2/            # Portfolio Manager (Puerto 8002)
-├── 📁 miniproyecto3/                 # Microservicios originales  
+├── 📁 miniproyecto3/                 # Intraday Strategy Using GARCH Model
 │   ├── 📁 microservicio1/            # GARCH Predictor (Puerto 8003)
 │   └── 📁 microservicio2/            # Intraday Strategy (Puerto 8004)
-├── 📁 ray_services/                  # 🚀 SERVICIOS RAY OPTIMIZADOS
+├── 📁 ray_services/                  # 🚀 RAY DISTRIBUTED SERVICES
 │   ├── 📁 sentiment_analyzer/        # Ray Sentiment (Puerto 8005)
 │   ├── 📁 garch_predictor/          # Ray GARCH (Puerto 8006)
-│   ├── 📁 portfolio_manager/        # Ray Portfolio (Puerto 8007)
-│   ├── 📁 intraday_strategy/        # Ray Strategy (Puerto 8008)
+│   ├── 📁 intraday_strategy/        # Ray Intraday (Puerto 8007)
+│   ├── 📁 portfolio_manager/        # Ray Portfolio (Puerto 8008)
 │   └── 📁 data/                     # Datos centralizados CSV
 ├── 📁 benchmarks/                   # 📊 SISTEMA DE BENCHMARKING
-│   ├── 📁 scripts/                  # 6 scripts de análisis
+│   ├── 📁 scripts/                  # Scripts de análisis comparativo
 │   ├── 📁 results/                  # Resultados y reportes
 │   └── requirements.txt
-├── docker-compose.yml              # Servicios originales
-├── docker-compose-ray.yml          # Servicios originales + Ray
+├── docker-compose.yml              # 🔧 Microservicios tradicionales (puertos 8001-8004)
+├── docker-compose-ray.yml          # 🚀 Servicios Ray distribuidos (puertos 8005-8008)
 └── README.md                       # Esta guía
 ```
 
@@ -147,87 +197,82 @@ Los benchmarks generan varios archivos en `benchmarks/results/`:
 
 ## 🌐 **SERVICIOS Y PUERTOS**
 
-### 🔧 **Servicios Originales (Miniproyectos)**
-| Servicio | Puerto | Descripción | Docs API |
-|----------|--------|-------------|----------|
-| **Twitter Sentiment Analyzer** | 8001 | Análisis de sentimientos de Twitter | http://localhost:8001/docs |
-| **Portfolio Manager** | 8002 | Gestión de portafolios | http://localhost:8002/docs |
-| **GARCH Volatility Predictor** | 8003 | Predicción de volatilidad GARCH | http://localhost:8003/docs |
-| **Intraday Strategy Engine** | 8004 | Motor de estrategias intraday | http://localhost:8004/docs |
+### 🔧 **Microservicios Tradicionales**
+| Servicio | Puerto | Implementación | Health Check |
+|----------|--------|----------------|--------------|
+| **Twitter Sentiment Analyzer** | 8001 | miniproyecto2/microservicio1 | http://localhost:8001/health |
+| **Portfolio Manager** | 8002 | miniproyecto2/microservicio2 | http://localhost:8002/health |
+| **GARCH Volatility Predictor** | 8003 | miniproyecto3/microservicio1 | http://localhost:8003/health |
+| **Intraday Strategy Engine** | 8004 | miniproyecto3/microservicio2 | http://localhost:8004/health |
 
-### 🚀 **Servicios Ray Remote Optimizados**
-| Servicio | Puerto | Descripción | Docs API | **Mejora Ray** |
-|----------|--------|-------------|----------|----------------|
-| **Ray Sentiment Analyzer** | 8005 | Análisis paralelo de sentimientos | http://localhost:8005/docs | Procesamiento distribuido |
-| **Ray GARCH Predictor** | 8006 | Predicción GARCH paralela | http://localhost:8006/docs | **+23.6% throughput** |
-| **Ray Portfolio Manager** | 8007 | Optimización paralela de portafolios | http://localhost:8007/docs | **+52.1% throughput** |
-| **Ray Intraday Strategy** | 8008 | Backtesting distribuido | http://localhost:8008/docs | Escalabilidad lineal |
-
----
-
-## 🧪 **EJEMPLOS DE USO PRÁCTICO**
-
-### 1️⃣ **Probar Servicios Originales**
-
-```bash
-# Verificar estado de todos los servicios
-curl http://localhost:8001/status
-curl http://localhost:8002/status  
-curl http://localhost:8003/status
-curl http://localhost:8004/status
-
-# Workflow completo Miniproyecto 2 (Sentiment)
-curl http://localhost:8001/load-sentiment-data
-curl http://localhost:8001/calculate-engagement/AAPL
-curl http://localhost:8002/select-top-stocks?limit=5
-curl http://localhost:8002/portfolio-performance
-
-# Workflow completo Miniproyecto 3 (GARCH)
-curl http://localhost:8003/load-market-data
-curl -X POST http://localhost:8003/predict-volatility \
-  -H "Content-Type: application/json" \
-  -d '{"ticker": "AAPL", "periods": 30}'
-curl -X POST http://localhost:8004/calculate-intraday-signals \
-  -H "Content-Type: application/json" \
-  -d '{"daily_signal": 1}'
-```
-
-### 2️⃣ **Probar Servicios Ray Optimizados**
-
-```bash
-# Verificar servicios Ray
-curl http://localhost:8005/status
-curl http://localhost:8006/status
-curl http://localhost:8007/status  
-curl http://localhost:8008/status
-
-# Análisis paralelo con Ray
-curl http://localhost:8005/parallel-sentiment-analysis
-curl http://localhost:8006/parallel-volatility-prediction
-curl http://localhost:8007/parallel-portfolio-optimization
-curl http://localhost:8008/parallel-strategy-backtesting
-```
+### 🚀 **Ray Distributed Services**
+| Servicio | Puerto | Implementación | Health Check | **Ventaja Ray** |
+|----------|--------|----------------|--------------|----------------|
+| **Ray Sentiment Analyzer** | 8005 | ray_services/sentiment_analyzer | http://localhost:8005/health | Procesamiento paralelo |
+| **Ray GARCH Predictor** | 8006 | ray_services/garch_predictor | http://localhost:8006/health | Predicción distribuida |
+| **Ray Intraday Strategy** | 8007 | ray_services/intraday_strategy | http://localhost:8007/health | Backtesting paralelo |
+| **Ray Portfolio Manager** | 8008 | ray_services/portfolio_manager | http://localhost:8008/health | Optimización distribuida |
 
 ---
 
-## 📊 **RESULTADOS ESPERADOS DE BENCHMARKING**
+## 🧪 **EJEMPLOS DE USO Y TESTING**
 
-Al ejecutar los benchmarks, deberías obtener resultados similares a:
+### 1️⃣ **Verificar Health de Servicios**
 
-### 🏆 **Comparación Ray vs Secuencial**
-| Microservicio | Mejora Tiempo | Mejora Throughput | Ray Success |
+```bash
+curl http://localhost:8001/health
+curl http://localhost:8002/health  
+curl http://localhost:8003/health
+curl http://localhost:8004/health
+
+# Ray services (si están activos)
+curl http://localhost:8005/health
+curl http://localhost:8006/health
+curl http://localhost:8007/health  
+curl http://localhost:8008/health
+```
+
+### 2️⃣ **Test de Funcionalidad Básica**
+
+```bash
+# Miniproyecto 2: Twitter Sentiment Strategy
+curl http://localhost:8001/analyze-sentiment
+curl http://localhost:8002/portfolio-status
+
+# Miniproyecto 3: Intraday Strategy Using GARCH Model  
+curl http://localhost:8003/predict-volatility
+curl http://localhost:8004/strategy-signals
+
+# Ray Services (procesamiento distribuido)
+curl http://localhost:8005/parallel-sentiment
+curl http://localhost:8006/parallel-garch
+curl http://localhost:8007/parallel-strategy
+curl http://localhost:8008/parallel-portfolio
+```
+
+### 3️⃣ **Benchmark Completo**
+
+```bash
+cd benchmarks/scripts
+python comprehensive_benchmark.py
+```
+
+---
+
+## 📊 **MÉTRICAS Y RESULTADOS ESPERADOS**
+
+### � **Comparación de Implementaciones**
+| Implementación | Tiempo Ejecución | Throughput | Recursos | Escalabilidad |
+|---------------|------------------|------------|----------|---------------|
 |---------------|---------------|-------------------|-------------|
-| **Optimización de Portafolio** | **+34.3%** | **+52.1%** | 100.0% |
-| **Predicción GARCH** | **+19.1%** | **+23.6%** | 100.0% |
-| **Análisis de Sentimiento** | -3.1% | -3.0% | 100.0% |
-| **Análisis de Estrategias** | -101.5% | -50.4% | 100.0% |
+| **Secuencial (Jupyter)** | Baseline | ~5-10 ops/s | Alto (single-core) | Limitada |
+| **Microservicios** | Baseline | ~15-25 ops/s | Medio (multi-container) | Horizontal |
+| **Ray Distribuido** | **Mejor** | ~30-50 ops/s | Óptimo (multi-core) | **Lineal** |
 
-### 📈 **Throughput por Servicio Ray**
-- **Ray Sentiment**: 14.04 req/s
-- **Ray GARCH**: 21.73 req/s  
-- **Ray Portfolio**: 2.77 req/s
-- **Ray Intraday**: 50.14 req/s
-- **Promedio General**: 22.17 req/s
+### 🏆 **Ventajas por Implementación**
+- **Secuencial**: Simplicidad, desarrollo rápido, debugging fácil
+- **Microservicios**: Escalabilidad horizontal, tolerancia a fallos, despliegue independiente
+- **Ray Distribuido**: Alto rendimiento, paralelización automática, optimización de recursos
 
 ---
 
@@ -235,52 +280,60 @@ Al ejecutar los benchmarks, deberías obtener resultados similares a:
 
 ### 🐳 **Gestión de Docker**
 ```bash
-# Ver logs de un servicio específico
-docker-compose -f docker-compose-ray.yml logs ray-portfolio-manager
+# Ver logs de servicios específicos
+docker-compose logs sentiment-analyzer                    # Servicios tradicionales
+docker-compose -f docker-compose-ray.yml logs ray-portfolio-manager  # Servicios Ray
 
-# Reconstruir un servicio específico
-docker-compose -f docker-compose-ray.yml build ray-sentiment-analyzer
+# Reconstruir servicios específicos
+docker-compose build --no-cache sentiment-analyzer        # Servicios tradicionales
+docker-compose -f docker-compose-ray.yml build --no-cache ray-garch-predictor  # Servicios Ray
 
-# Ejecutar en modo desarrollo (con logs en vivo)
-docker-compose -f docker-compose-ray.yml up
+# Ejecutar en modo desarrollo (logs en vivo)
+docker-compose up                                         # Servicios tradicionales
+docker-compose -f docker-compose-ray.yml up              # Servicios Ray
 
-# Detener todos los servicios
-docker-compose -f docker-compose-ray.yml down
+# Detener servicios
+docker-compose down                                       # Servicios tradicionales
+docker-compose -f docker-compose-ray.yml down            # Servicios Ray
 
-# Limpiar volúmenes y redes
-docker-compose -f docker-compose-ray.yml down -v --remove-orphans
+# Detener TODOS los servicios
+docker-compose down && docker-compose -f docker-compose-ray.yml down
+
+# Limpiar sistema Docker completamente
+docker system prune -a -f
 ```
 
 ### 📊 **Gestión de Benchmarks**
 ```bash
-# Re-ejecutar benchmarks después de cambios
+# Ejecutar benchmarks individuales
 cd benchmarks/scripts
-python ray_comparison_benchmark.py
+python benchmark_original.py          # Implementación secuencial
+python ray_benchmark.py              # Solo Ray services
+python comprehensive_benchmark.py    # Comparación completa
 
-# Ver resultados históricos
+# Ver resultados
 cd ../results
-ls -la  # Linux/Mac
-dir     # Windows
-
-# Limpiar resultados anteriores
-rm -rf ../results/*  # Linux/Mac  
-del /Q ..\results\*  # Windows
+ls -la      # Linux/Mac
+dir         # Windows
 ```
 
 ### 🔍 **Debugging y Monitoreo**
 ```bash
 # Verificar uso de recursos
+### 🔍 **Monitoreo y Debugging**
+```bash
+# Ver recursos en tiempo real
 docker stats
 
-# Inspeccionar un contenedor específico
-docker inspect ray-portfolio-manager
+# Inspeccionar configuración de contenedor
+docker inspect twitter-sentiment-analyzer
 
 # Acceder al contenedor para debugging
-docker exec -it ray-portfolio-manager /bin/bash
+docker exec -it garch-volatility-predictor /bin/bash
 
-# Ver red de Docker
+# Ver red de servicios
 docker network ls
-docker network inspect proyect-final-infra_default
+docker network inspect unified-services-network
 ```
 
 ---
@@ -288,23 +341,29 @@ docker network inspect proyect-final-infra_default
 ## 🗂️ **ARCHIVOS Y DATASETS**
 
 ### 📊 **Datos del Proyecto**
-Los microservicios utilizan datasets reales del proyecto original:
+Los servicios utilizan datasets específicos por implementación:
 
 ```bash
-📁 ray_services/data/
-├── sentiment_data.csv          # Datos de Twitter sentiment (Miniproyecto 2)
-├── simulated_daily_data.csv    # Datos diarios para GARCH (Miniproyecto 3)  
-└── simulated_5min_data.csv     # Datos intraday 5min (Miniproyecto 3)
+📁 Datos por Implementación:
+├── 📊 Instrucciones Proyecto/
+│   ├── sentiment_data.csv          # Datos originales para Jupyter
+│   ├── simulated_daily_data.csv    # Datos diarios originales
+│   └── simulated_5min_data.csv     # Datos intraday originales
+├── 📁 miniproyecto2/ & miniproyecto3/
+│   └── [Copias locales de datos]   # Datos específicos por microservicio
+└── 📁 ray_services/data/
+    ├── sentiment_data.csv          # Datos centralizados para Ray
+    ├── simulated_daily_data.csv    # Datos centralizados para Ray
+    └── simulated_5min_data.csv     # Datos centralizados para Ray
 ```
 
 ### 📈 **Resultados de Benchmarking**
 ```bash
 📁 benchmarks/results/
-├── comparison_benchmark_YYYYMMDD_HHMMSS.txt    # Comparación principal
-├── ray_performance_results_YYYYMMDD_HHMMSS.json # Métricas JSON
-├── ray_performance_results_YYYYMMDD_HHMMSS.csv  # Datos exportables
-├── bottleneck_analysis.md                       # Análisis de optimización
-└── REPORTE_FINAL_PROYECTO.md                   # Reporte completo
+├── comprehensive_results_YYYYMMDD_HHMMSS.json  # Resultados completos
+├── performance_comparison_YYYYMMDD.csv         # Datos exportables
+├── benchmark_summary.md                        # Resumen ejecutivo
+└── REPORTE_FINAL_PROYECTO.md                  # Reporte académico
 ```
 
 ---
@@ -313,105 +372,128 @@ Los microservicios utilizan datasets reales del proyecto original:
 
 ### ❌ **Problemas Comunes y Soluciones**
 
-1. **Puerto ya en uso**:
+**1. Puerto ya en uso:**
 ```bash
-# Error: "Port 8001 is already in use"
-# Solución: Cambiar puertos en docker-compose-ray.yml o matar procesos
-netstat -tulpn | grep 8001  # Linux
-netstat -ano | findstr 8001 # Windows
+# Windows
+netstat -ano | findstr 8001
+taskkill /PID <PID> /F
+
+# Linux/Mac
+lsof -ti:8001 | xargs kill -9
 ```
 
-2. **Error al construir imágenes**:
+**2. Error al construir imágenes:**
 ```bash
-# Error: "No such file or directory"
-# Solución: Verificar estructura de archivos y rebuild
+# Limpiar y reconstruir completamente
+docker-compose down
 docker-compose -f docker-compose-ray.yml down
-docker-compose -f docker-compose-ray.yml build --no-cache
+docker system prune -f
+
+# Reconstruir según necesidad
+docker-compose build --no-cache          # Solo tradicionales
+docker-compose -f docker-compose-ray.yml build --no-cache  # Solo Ray
 ```
 
-3. **Servicios Ray no responden**:
+**3. Servicios no health check:**
 ```bash
-# Error: "500 Internal Server Error"
-# Solución: Verificar logs y restart
-docker-compose -f docker-compose-ray.yml logs ray-portfolio-manager
-docker-compose -f docker-compose-ray.yml restart ray-portfolio-manager
+# Verificar logs del servicio problemático
+docker-compose logs sentiment-analyzer                     # Tradicionales
+docker-compose -f docker-compose-ray.yml logs ray-garch-predictor  # Ray
+
+# Restart de servicio específico
+docker-compose restart intraday-strategy                   # Tradicionales
+docker-compose -f docker-compose-ray.yml restart ray-portfolio-manager  # Ray
 ```
 
-4. **Benchmarks fallan**:
+**4. Benchmarks fallan por conexión:**
 ```bash
-# Error: "Connection refused"
-# Solución: Asegurar que todos los servicios estén activos
-docker ps  # Verificar que 8 servicios estén corriendo
-curl http://localhost:8005/status  # Test individual
+# Verificar todos los servicios estén activos
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# Test de conectividad individual
+curl http://localhost:8001/health
+curl http://localhost:8005/health
 ```
 
-### 🔍 **Verificación de Salud del Sistema**
-
-Comando rápido para verificar todo:
+**5. Problemas de memoria con Ray:**
 ```bash
-# Script de verificación completa
-echo "=== VERIFICANDO SERVICIOS ==="
-for port in 8001 8002 8003 8004 8005 8006 8007 8008; do
-  echo -n "Puerto $port: "
-  curl -s http://localhost:$port/status > /dev/null && echo "✅ OK" || echo "❌ FAIL"
-done
+# Aumentar límites de Docker Desktop
+# Settings > Resources > Memory: 8GB mínimo
 
-echo "=== VERIFICANDO CONTENEDORES ==="
+# O ejecutar solo microservicios tradicionales:
+docker-compose up -d
+
+# O ejecutar solo servicios Ray:
+docker-compose -f docker-compose-ray.yml up -d
+```
+
+### 🔍 **Verificación Rápida del Sistema**
+
+```bash
+# Script de verificación completa (Windows PowerShell)
+Write-Host "=== VERIFICANDO SERVICIOS ===" -ForegroundColor Yellow
+@(8001,8002,8003,8004,8005,8006,8007,8008) | ForEach-Object {
+    $port = $_
+    Write-Host -NoNewline "Puerto $port : "
+    try {
+        $response = Invoke-WebRequest -Uri "http://localhost:$port/health" -TimeoutSec 5 -UseBasicParsing
+        Write-Host "✅ OK" -ForegroundColor Green
+    } catch {
+        Write-Host "❌ FAIL" -ForegroundColor Red
+    }
+}
+
+Write-Host "`n=== VERIFICANDO CONTENEDORES ===" -ForegroundColor Yellow
 docker ps --format "table {{.Names}}\t{{.Status}}"
 ```
 
 ---
 
-## 📚 **ARCHIVOS DE AYUDA INCLUIDOS**
+## 📚 **DOCUMENTACIÓN ADICIONAL**
 
-Para facilitar el uso del proyecto hemos incluido:
+### 📋 **Archivos de Referencia**
+| Archivo | Descripción | Contenido |
+|---------|-------------|-----------|
+| **README.md** | 📖 Manual completo del proyecto | Esta guía completa |
+| **COMANDOS_RAPIDOS.md** | ⚡ Comandos frecuentes | Referencia rápida |
+| **docker-compose.yml** | � Microservicios tradicionales | 4 servicios (puertos 8001-8004) |
+| **docker-compose-ray.yml** | 🚀 Servicios Ray distribuidos | 4 servicios Ray (puertos 8005-8008) |
 
-| Archivo | Descripción | Uso |
-|---------|-------------|-----|
-| **README.md** | 📖 Manual completo del proyecto | Guía principal |
-| **COMANDOS_RAPIDOS.md** | ⚡ Referencia rápida de comandos | Comandos frecuentes |
+### 🎯 **Objetivos Académicos Cumplidos**
 
-### 🚀 **Flujo Recomendado para Nuevos Colaboradores:**
+✅ **Implementación Secuencial**: Jupyter Notebook funcional  
+✅ **Microservicios Tradicionales**: 4 servicios dockerizados  
+✅ **Ray Distribuido**: 4 servicios con paralelización  
+✅ **Benchmarking Comparativo**: Sistema de medición completo  
+✅ **Documentación Técnica**: Manual de usuario detallado  
 
-1. **Setup manual**: Seguir PASO 1-2 del manual
-2. **Referencia rápida**: Usar `COMANDOS_RAPIDOS.md` para comandos frecuentes
-3. **Benchmarking**: Ejecutar PASO 3 para ver mejoras Ray Remote
+### 🔬 **Contribuciones Técnicas**
+
+1. **Arquitectura Híbrida**: Comparación de 3 paradigmas diferentes
+2. **Separación de Orquestación**: Dos archivos Docker Compose independientes
+3. **Health Monitoring**: Endpoints /health en todos los servicios
+4. **Benchmarking Automatizado**: Scripts de comparación automática
+5. **Documentación Ejecutiva**: README estructurado y completo
 
 ---
 
-## 📚 **DOCUMENTACIÓN TÉCNICA**
+## � **CRÉDITOS Y RECONOCIMIENTOS**
 
-### 🎯 **Criterios Académicos Cumplidos**
+**Proyecto Final - Infraestructuras Distribuidas y Paralelas**  
+**Universidad**: [Nombre de la Universidad]  
+**Curso**: Infraestructuras Distribuidas y Paralelas  
+**Semestre**: 6  
 
-1. **✅ Implementación paralela con Ray (25%)**
-   - @ray.remote decorators en 4 microservicios
-   - Paralelización cuantitativa demostrada
-   - Mejoras de rendimiento comprobadas
+### � **Logros del Proyecto**
+- ✅ **Implementación exitosa** de 3 arquitecturas diferentes
+- ✅ **Paralelización efectiva** con Ray framework
+- ✅ **Containerización completa** con Docker
+- ✅ **Benchmarking académico** riguroso y documentado
+- ✅ **Escalabilidad demostrada** cuantitativamente
 
-2. **✅ Arquitectura de Microservicios**
-   - 8 servicios independientes dockerizados
-   - APIs REST bien definidas con FastAPI
-   - Separación clara de responsabilidades
+---
 
-3. **✅ Benchmarking y Optimización**
-   - Sistema de benchmarking comprehensivo
-   - Comparaciones cuantitativas documentadas
-   - Análisis de cuellos de botella identificados
-
-### 📖 **Referencias Técnicas**
-
-- **Ray Documentation**: https://docs.ray.io/
-- **FastAPI Documentation**: https://fastapi.tiangolo.com/
-- **Docker Compose Reference**: https://docs.docker.com/compose/
-
-### 🎓 **Para Estudiantes y Colaboradores**
-
-Este proyecto demuestra:
-- **Paralelización efectiva** con Ray Remote
-- **Arquitectura de microservicios** escalable
-- **Containerización** con Docker
-- **Benchmarking académico** riguroso
-- **APIs RESTful** bien documentadas
+**📞 Para soporte técnico o consultas académicas, revisar la documentación incluida en el proyecto.**
 
 ---
 
